@@ -8,6 +8,8 @@ import {
     ContributionGraph
   } from 'react-native-chart-kit'
 import Header from './../components/Header';
+import * as Animatable from 'react-native-animatable';
+import Close from '../assets/Images/close.png';
 
 
 export default class Graph extends Component {
@@ -15,65 +17,48 @@ export default class Graph extends Component {
     super(props);
     this.state = {
       data:[],
-      days:[]
+      days:[],
+      AnimatedValue:0,
+      AnimatedText:"Breathe In",
+      time:0
     };
   }
 
-  componentWillMount(){
-    fetch('https://breathly-bf15.restdb.io/rest/breathly',{
-      method:"GET",
-      headers:{
-        'cache-control': 'no-cache',
-        'x-apikey': '5b1dc1523d7ef11872176c16ffd5424d4d9b6' 
-      }
-    }).then(res => res.json()).then(resJson => {this.setState({data:resJson.map(item => item.breathly),days:resJson.map(item => item.day)})}).catch(e => console.log(e))
+  TimeChange(){
+    this.setState({
+      time:this.state.time + 1
+    })
   }
+
+  componentDidMount(){
+    setInterval(() => {
+      this.TimeChange()
+    },1000)
+  }
+   
 
   render() {
     return (
-      <ScrollView style={{flex:1}}>
-          <Header />
-            
-            {/* Sales Chart */}
-            
-            <View style={{width:"100%",alignItems: 'center',marginTop:30}}>
-                <Text style={{color:"#3DA5F4",fontWeight:"bold",fontSize:20,marginBottom:20}}>Stress Level</Text>
-                {console.log(this.state.data)}
-               
-               {
-                 this.state.data.length == 0 ? <Text>Loading</Text> :
-               <LineChart
-                    data={{
-                    labels: this.state.days,
-                    datasets: [{
-                        data: this.state.data
-                    }]
-                    }}
-                    width={Dimensions.get('window').width - 45} // from react-native
-                    height={220}
-                    chartConfig={{
-                    backgroundColor: '#85C8EA',
-                    backgroundGradientFrom: '#3DA5F4',
-                    backgroundGradientTo: '#3DA5F4',
-                    decimalPlaces: 2, // optional, defaults to 2dp
-                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                    style: {
-                        borderRadius: 16
-                    }
-                    }}
-                    bezier
-                    style={{
-                    marginVertical: 8,
-                    borderRadius: 16,
-                    color:"white"
-                    }}
-                />}
-                </View>
-                
-                {/* Sales chart end */}
-                
-    
-      </ScrollView>
+      <View style={{flex:1}}>
+                <View style={{flex:1,justifyContent: 'center',alignItems: 'center',width:"100%"}}>
+                  <View style={{width:"100%",alignItems: 'center',justifyContent: 'center',marginBottom:40}}>
+                    <Text style={{fontSize:20,marginBottom:20}}>{this.state.time}</Text>
+                    <View style={{borderRadius:200,width:250,height:250,backgroundColor: "rgba(133, 200, 234, 0.5)",alignItems: 'center',justifyContent: 'center',}}>
+                      <View style={{borderRadius:100,width:100,height:100,backgroundColor: "#85C8EA",alignItems: 'center',justifyContent: 'center',}}>
+                        <Animatable.View onTransitionEnd={() => {this.setState({AnimatedText:"Breathe Out"})}} onAnimationBegin={() => this.setState({AnimatedText:"Breathe In"})} iterationCount={100} duration={3000} iterationDelay={5000} animation="zoomIn" direction="alternate"  style={{borderRadius:150,width:250,height:250,backgroundColor: "#85C8EA",alignItems: 'center',justifyContent: 'center',}}>
+                              <Text style={{color:"white"}}>{this.state.AnimatedText}</Text>
+                        </Animatable.View>
+                      </View>
+                    </View>
+                  </View>
+                </View>   
+
+                <View style={{width:"100%",alignItems: 'center',justifyContent: 'center',marginBottom:40}}>
+                      <TouchableOpacity onPress={() => this.props.navigation.navigate("Home")} style={{borderRadius:100,width:60,height:60,backgroundColor: "#85C8EA",alignItems: 'center',justifyContent: 'center',}}>
+                          <Image source={Close} style={{width:15,height:15}} />
+                      </TouchableOpacity>
+                </View>       
+      </View>
     );
   }
 }
